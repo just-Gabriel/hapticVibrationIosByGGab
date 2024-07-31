@@ -3,17 +3,19 @@ import UIKit
 
 struct TestView: View {
     @StateObject private var viewModel = UserViewModel()
-    @State private var selectedOption = "Selection"
-    @State private var slider1Value: Double = 0
-    @State private var slider2Value: Double = 0
-    @State private var validateCount: Int = 14
+    @State private var slider1Value: Double = 0.0
+    @State private var slider2Value: Double = 0.0
+    @State private var validateCount: Int = 42
     @State private var isFirstButtonPressed: Bool = false
-    @State private var usedFeedbackTypes: Set<String> = []
     @State private var currentFeedbackType: String?
     @State private var feedbackPlayCount: Int = 0
+    @State private var currentTableau: Int = 0
+    @State private var currentVibrationIndex: Int = 0
     @State private var showNextTestView: Bool = false
+    @State private var showThankYouView: Bool = false
+    @State private var availableFeedbackTypesTableaus: [[String]]
+    @State private var isLoadingData = true
 
-    let options = ["Action confirmation", "Échec", "Navigation", "Selection", "Succès", "Avertissement"]
     let accentColor = Color(hex: "#019AAF")
 
     var feedbackTypes: [String: () -> Void] = [
@@ -120,129 +122,239 @@ struct TestView: View {
         }
     ]
 
+    init() {
+        let allKeys = Array(feedbackTypes.keys)
+        let tableau1 = Array(allKeys).shuffled()
+        let tableau2 = Array(allKeys).shuffled()
+        let tableau3 = Array(allKeys).shuffled()
+        
+        _availableFeedbackTypesTableaus = State(initialValue: [tableau1, tableau2, tableau3])
+    }
+
     var body: some View {
         VStack {
-            if showNextTestView {
+            if showThankYouView {
+                ThankYouView()
+                    .transition(.opacity)
+                    .navigationBarHidden(true)
+            } else if showNextTestView {
                 NextTestView()
                     .transition(.opacity)
                     .navigationBarHidden(true)
             } else {
                 VStack {
-                    Spacer(minLength: 10)
+                    if isLoadingData {
+                        ProgressView("Chargement des données...")
+                            .progressViewStyle(CircularProgressViewStyle())
+                            .onAppear {
+                                loadData()
+                            }
+                    } else {
+                        Spacer(minLength: 10)
 
-                    Text("Vibration \(feedbackPlayCount)/3")
-                        .font(.subheadline)
-                        .padding(.bottom, 10)
+                        Text("\(feedbackPlayCount)/3 fois")
+                            .font(.subheadline)
+                            .padding(.bottom, 10)
 
-                    Button(action: {
-                        if feedbackPlayCount < 3 {
-                            if let feedbackType = currentFeedbackType ?? feedbackTypes.keys.filter({ !usedFeedbackTypes.contains($0) }).randomElement() {
-                                feedbackTypes[feedbackType]?()
-                                currentFeedbackType = feedbackType
-                                feedbackPlayCount += 1
-                                isFirstButtonPressed = true
-                                if feedbackPlayCount == 3 {
-                                    saveVibration(feedbackType: feedbackType, count: feedbackPlayCount)
+                        Button(action: {
+                            if feedbackPlayCount < 3 {
+                                if currentFeedbackType == nil {
+                                    selectCurrentFeedbackType()
+                                }
+                                if let feedbackType = currentFeedbackType {
+                                    feedbackTypes[feedbackType]?()
+                                    feedbackPlayCount += 1
+                                    isFirstButtonPressed = true
                                 }
                             }
+                        }) {
+                            Text("Jouer la vibration")
+                                .padding()
+                                .background(feedbackPlayCount < 3 ? accentColor : Color.gray)
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
                         }
-                    }) {
-                        Text("Vibration")
-                            .padding()
-                            .background(feedbackPlayCount < 3 ? accentColor : Color.gray)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                    }
-                    .padding(.bottom, 30)
-                    .disabled(feedbackPlayCount >= 3 || validateCount <= 0)
-
-                    VStack {
-                        Text("Agréabilité \(Int(slider1Value))")
-                        CustomSliderWithTicks(value: $slider1Value, range: -5...5, accentColor: accentColor, step: 1)
-                            .padding()
-
-                        Text("Intensité \(Int(slider2Value))")
-                        CustomSliderWithTicks(value: $slider2Value, range: -5...5, accentColor: accentColor, step: 1)
-                            .padding()
-                    }
-                    .disabled(validateCount <= 0)
-
-                    CustomPicker(selectedOption: $selectedOption, options: options, accentColor: accentColor)
-                        .frame(width: 200)
-                        .padding(.top, 20)
+                        .padding(.bottom, 30)
                         .disabled(validateCount <= 0)
 
-                    Spacer()
+                        Spacer()
 
-                    Button(action: {
-                        if isFirstButtonPressed {
-                            submitExperience()
-                            validateCount -= 1
-                            slider1Value = 0
-                            slider2Value = 0
-                            isFirstButtonPressed = false
-                            feedbackPlayCount = 0
-                            currentFeedbackType = nil
-                            if validateCount > 0 {
-                                showNextTestView = true
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                    showNextTestView = false
+                        VStack {
+                            HStack {
+                                Text("Désagréable")
+                                    .font(.caption)
+                                    .foregroundColor(.black)
+                                Spacer()
+                                Text(String(format: "%.1f", slider1Value))
+                                    .font(.caption)
+                                    .foregroundColor(.white)
+                                Spacer()
+                                Text("Agréable")
+                                    .font(.caption)
+                                    .foregroundColor(.black)
+                            }
+                            .padding(.horizontal)
+
+                            CustomSliderWithTicks(value: $slider1Value, range: -5.0...5.0, accentColor: accentColor, step: 0.1)
+                                .padding()
+
+                            HStack {
+                                Text("Faible")
+                                    .font(.caption)
+                                    .foregroundColor(.black)
+                                Spacer()
+                                Text(String(format: "%.1f", slider2Value))
+                                    .font(.caption)
+                                    .foregroundColor(.white)
+                                Spacer()
+                                Text("Intense")
+                                    .font(.caption)
+                                    .foregroundColor(.black)
+                            }
+                            .padding(.horizontal)
+
+                            CustomSliderWithTicks(value: $slider2Value, range: 0.0...10, accentColor: accentColor, step: 0.4)
+                                .padding()
+                        }
+                        .padding(.bottom, 30)
+                        .disabled(validateCount <= 0)
+
+                        Spacer()
+
+                        Button(action: {
+                            if isFirstButtonPressed {
+                                saveVibrationAndSubmitExperience(slider1Value: slider1Value, slider2Value: slider2Value)
+                                moveToNextVibrationOrTableau()
+                                validateCount -= 1
+                                if validateCount > 0 {
+                                    showNextTestView = true
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                        showNextTestView = false
+                                    }
+                                } else {
+                                    showThankYouView = true
                                 }
                             }
+                        }) {
+                            Text("Valider")
+                                .padding(20)
+                                .background(accentColor)
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
                         }
-                    }) {
-                        Text("Valider")
-                            .padding(20)
-                            .background(accentColor)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                    }
-                    .padding(.bottom, 20)
-                    .disabled(validateCount <= 0)
-
-                    Text("Tests restant: \(validateCount)")
-                        .font(.headline)
                         .padding(.bottom, 20)
+                        .disabled(!isFirstButtonPressed || validateCount <= 0 || isLoadingData)
 
-                    Spacer()
+                        Text("Compteur: \(validateCount)")
+                            .font(.headline)
+                            .padding(.bottom, 20)
+
+                        Spacer()
+                    }
                 }
                 .navigationBarHidden(true)
-                .onAppear {
-                    viewModel.fetchUsers()
-                    viewModel.fetchTelephones()
-                    viewModel.fetchVibrations()
-                }
             }
         }
         .navigationBarBackButtonHidden(true)
     }
 
-    private func saveVibration(feedbackType: String, count: Int) {
-        let vibration = Vibration(id: nil, nom_vibration: feedbackType, nombre_de_fois: count)
-        viewModel.createVibration(vibration: vibration)
+    private func loadData() {
+        let group = DispatchGroup()
+
+        group.enter()
+        viewModel.fetchUsers()
+            .sink(receiveCompletion: { _ in
+                group.leave()
+            }, receiveValue: { _ in })
+            .store(in: &viewModel.cancellables)
+
+        group.enter()
+        viewModel.fetchTelephones()
+            .sink(receiveCompletion: { _ in
+                group.leave()
+            }, receiveValue: { _ in })
+            .store(in: &viewModel.cancellables)
+
+        group.enter()
+        viewModel.fetchVibrations()
+            .sink(receiveCompletion: { _ in
+                group.leave()
+            }, receiveValue: { _ in })
+            .store(in: &viewModel.cancellables)
+
+        group.notify(queue: .main) {
+            isLoadingData = false
+        }
     }
 
-    private func submitExperience() {
-        guard let userId = viewModel.users.first?.id,
-              let telephoneId = viewModel.telephones.first?.id,
-              let feedbackType = currentFeedbackType,
-              let vibration = viewModel.vibrations.first(where: { $0.nom_vibration == feedbackType }) else {
-            print("Erreur : l'utilisateur, le téléphone ou le type de vibration est manquant")
+    private func selectCurrentFeedbackType() {
+        guard currentTableau < availableFeedbackTypesTableaus.count,
+              currentVibrationIndex < availableFeedbackTypesTableaus[currentTableau].count else {
+            return
+        }
+        currentFeedbackType = availableFeedbackTypesTableaus[currentTableau][currentVibrationIndex]
+    }
+
+    private func moveToNextVibrationOrTableau() {
+        if currentVibrationIndex < 13 {
+            currentVibrationIndex += 1
+        } else {
+            currentVibrationIndex = 0
+            if currentTableau < 2 {
+                currentTableau += 1
+            } else {
+                showThankYouView = true
+                return
+            }
+        }
+        resetStateForNextVibrationOrTableau()
+        selectCurrentFeedbackType()
+    }
+
+    private func saveVibrationAndSubmitExperience(slider1Value: Double, slider2Value: Double) {
+        guard let feedbackType = currentFeedbackType else {
+            print("Erreur : le type de vibration est manquant")
             return
         }
 
+        let vibration = Vibration(id: nil, nom_vibration: feedbackType, nombre_de_fois: feedbackPlayCount)
+        viewModel.createVibration(vibration: vibration) { createdVibration in
+            print("Vibration créée avec ID: \(createdVibration.id ?? 0)")
+            self.submitExperience(vibrationId: createdVibration.id ?? 0, slider1Value: slider1Value, slider2Value: slider2Value)
+        }
+    }
+
+    private func submitExperience(vibrationId: Int, slider1Value: Double, slider2Value: Double) {
+        guard let user = viewModel.users.first,
+              let telephone = viewModel.telephones.first else {
+            print("Erreur : l'utilisateur ou le téléphone est manquant")
+            print("Users: \(viewModel.users)")
+            print("Telephones: \(viewModel.telephones)")
+            return
+        }
+
+        // Log des valeurs des sliders avant soumission
+        print("Submitting experience with agreabilite: \(slider1Value), intensite: \(slider2Value)")
+
         let experience = Experience(
             id: nil,
-            agreabilite: Int(slider1Value),
-            intensite: Int(slider2Value),
-            impression: selectedOption,
-            userId: userId,
-            telephoneId: telephoneId,
-            vibrationId: vibration.id ?? 0
+            agreabilite: Float(slider1Value),
+            intensite: Float(slider2Value),
+            user: "http://192.168.68.104:8000/api/users/\(user.id ?? 0)",
+            telephone: "http://192.168.68.104:8000/api/telephones/\(telephone.id ?? 0)",
+            vibration: "http://192.168.68.104:8000/api/vibrations/\(vibrationId)"
         )
 
         viewModel.createExperience(experience: experience)
         print("Expérience soumise : \(experience)")
+    }
+
+    private func resetStateForNextVibrationOrTableau() {
+        slider1Value = 0.0
+        slider2Value = 0.0
+        isFirstButtonPressed = false
+        feedbackPlayCount = 0
+        currentFeedbackType = nil
     }
 }
 

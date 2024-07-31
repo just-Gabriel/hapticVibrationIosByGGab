@@ -1,17 +1,17 @@
 import SwiftUI
 
-struct PageMenuView: View { // Renommé de MenuView
+struct PageMenuView: View {
     var body: some View {
         VStack(alignment: .leading) {
-            NavigationLink(destination: FormulaireView()) {
-                Text("Formulaire")
-                    .foregroundColor(.white) // Assurez-vous que le texte est blanc
-                    .font(.headline)
-                    .padding(.top, 30)
-            }
+//            NavigationLink(destination: FormulaireView()) {
+//                Text("Commencer")
+//                    .foregroundColor(.white)
+//                    .font(.headline)
+//                    .padding(.top, 30)
+//            }
             NavigationLink(destination: GuideView()) {
                 Text("Guide d'utilisation")
-                    .foregroundColor(.white) // Assurez-vous que le texte est blanc
+                    .foregroundColor(.white)
                     .font(.headline)
                     .padding(.top, 30)
             }
@@ -19,7 +19,7 @@ struct PageMenuView: View { // Renommé de MenuView
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(hex: "#A00000")) // Utilisation de la couleur de fond rouge hexadécimale
+        .background(Color(hex: "#A00000")) 
         .opacity(0.9)
         .cornerRadius(0)
         .padding(.top, 190)

@@ -3,9 +3,7 @@
 //
 // Created by Ortega Gabriel on 05/06/2024.
 //
-
 import SwiftUI
-import UIKit
 
 struct ContentView: View {
     var body: some View {

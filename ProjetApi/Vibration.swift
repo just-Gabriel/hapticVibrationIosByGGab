@@ -6,3 +6,15 @@
 //
 
 import Foundation
+
+struct Vibration: Codable {
+    let id: Int
+    let nom_vibration: String
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case nom_vibration
+    }
+}
+
+

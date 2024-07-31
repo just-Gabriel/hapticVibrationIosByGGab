@@ -1,8 +1,3 @@
-// PageView.swift
-// ProjetAflokkat
-//
-// Created by Ortega Gabriel on 16/05/2024.
-//
 import SwiftUI
 
 struct PageView: View {
@@ -19,7 +14,7 @@ struct PageView: View {
             }
 
         return GeometryReader { geometry in
-            ZStack(alignment: .leading) {
+            ZStack(alignment: .leading) {   
                 VStack {
                     MainView(showMenu: self.$showMenu)
                         .frame(width: geometry.size.width, height: geometry.size.height - 100)
@@ -39,7 +34,7 @@ struct PageView: View {
             }
             .gesture(drag)
             .navigationBarTitle("Menu", displayMode: .inline)
-            .navigationBarItems(trailing: (
+            .navigationBarItems(leading: (
                 Button(action: {
                     withAnimation {
                         self.showMenu.toggle()
@@ -71,10 +66,23 @@ struct MainView: View {
                 .multilineTextAlignment(.center)
                 .padding()
             Spacer()
+            
+            NavigationLink(destination: FormulaireView()) {
+                Text("Commencer")
+                    .font(.body)
+                    .foregroundColor(.white)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 16)
+                    .background(Color(hex: "#A00000"))
+                    .cornerRadius(10)
+            }
+            .padding(.bottom, 0)
+            
+            Spacer().frame(height: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.white)
-        .padding(.bottom, 70)
+        .padding(.bottom, 35)
     }
 }
 

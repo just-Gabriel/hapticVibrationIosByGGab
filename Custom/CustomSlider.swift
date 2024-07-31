@@ -1,8 +1,19 @@
 //
 //  CustomSlider.swift
-//  ProjetApi
+//  ProjetiPhone12
 //
-//  Created by Ortega Gabriel on 23/06/2024.
+//  Created by Ortega Gabriel on 19/06/2024.
 //
+import SwiftUI
 
-import Foundation
+struct CustomSlider: View {
+    @Binding var value: Double
+    var range: ClosedRange<Double>
+    var accentColor: Color
+
+    var body: some View {
+        Slider(value: $value, in: range)
+            .accentColor(accentColor)
+    }
+}
+
