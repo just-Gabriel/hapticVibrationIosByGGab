@@ -11,7 +11,7 @@ struct Experience: Codable {
     let id: Int
     let agreabilite: Int
     let intensite: Int
-    let impression: String
+    let impression: String?
 
     enum CodingKeys: String, CodingKey {
         case id

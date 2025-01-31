@@ -3,7 +3,7 @@ import Combine
 
 class APIService {
     static let shared = APIService()
-    let baseURL = "http://192.168.68.104:8000/api/"
+    let baseURL = "http://192.168.1.26:8000/api/"
 
     private init() {}
 
@@ -79,7 +79,8 @@ class APIService {
     }
 
     func createExperience(experience: Experience) -> AnyPublisher<Experience, Error> {
-        let url = URL(string: baseURL + "experiences")!
+        
+            let url = URL(string: baseURL + "experiences")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -110,7 +111,7 @@ class APIService {
             .eraseToAnyPublisher()
     }
 
-    func createVibration(vibration: Vibration) -> AnyPublisher<Vibration, Error> {
+    /*func createVibration(vibration: Vibration) -> AnyPublisher<Vibration, Error> {
         let url = URL(string: baseURL + "vibrations")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -140,7 +141,7 @@ class APIService {
             })
             .decode(type: Vibration.self, decoder: JSONDecoder())
             .eraseToAnyPublisher()
-    }
+    }*/
 
     func fetchUsers() -> AnyPublisher<[User], Error> {
         let url = URL(string: baseURL + "users")!

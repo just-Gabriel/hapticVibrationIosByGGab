@@ -12,8 +12,8 @@ class UserViewModel: ObservableObject {
     private var experienceQueue: [Experience] = []
     private var isSubmittingExperience = false
 
-    func createUser(user: User) {
-        APIService.shared.createUser(user: user)
+    /*func createUser(user: User){
+    APIService.shared.createUser(user: user)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { completion in
                 switch completion {
@@ -28,9 +28,20 @@ class UserViewModel: ObservableObject {
                 self.text = "Utilisateur créé avec succès !"
             })
             .store(in: &cancellables)
+    }*/
+    
+    func createUser(user: User) -> AnyPublisher<User, Error> {
+        return APIService.shared.createUser(user: user)
+            .receive(on: DispatchQueue.main)
+            .handleEvents(receiveOutput: { [weak self] createdUser in
+                self?.users.append(createdUser)
+                self?.text = "Utilisateur créé avec succès !"
+            })
+            .eraseToAnyPublisher()
     }
 
-    func createTelephone(telephone: Telephone) {
+
+    /*func createTelephone(telephone: Telephone) {
         APIService.shared.createTelephone(telephone: telephone)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { completion in
@@ -46,7 +57,19 @@ class UserViewModel: ObservableObject {
                 self.text = "Téléphone créé avec succès !"
             })
             .store(in: &cancellables)
+    }*/
+    
+    
+    func createTelephone(telephone: Telephone) -> AnyPublisher<Telephone, Error> {
+        return APIService.shared.createTelephone(telephone: telephone)
+            .receive(on: DispatchQueue.main)
+            .handleEvents(receiveOutput: { [weak self] createdPhone in
+                self?.telephones.append(createdPhone)
+                self?.text = "Téléphone créé avec succès !"
+            })
+            .eraseToAnyPublisher()
     }
+
 
     func createExperience(experience: Experience) {
         experienceQueue.append(experience)
@@ -83,7 +106,7 @@ class UserViewModel: ObservableObject {
         submitExperience(nextExperience)
     }
 
-    func createVibration(vibration: Vibration, completion: @escaping (Vibration) -> Void) {
+    /*func createVibration(vibration: Vibration, completion: @escaping (Vibration) -> Void) {
         APIService.shared.createVibration(vibration: vibration)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { completion in
@@ -100,7 +123,7 @@ class UserViewModel: ObservableObject {
                 completion(vibration) // Renvoie la vibration créée avec l'ID
             })
             .store(in: &cancellables)
-    }
+    }*/
 
     func fetchUsers() -> AnyPublisher<Void, Never> {
         APIService.shared.fetchUsers()
