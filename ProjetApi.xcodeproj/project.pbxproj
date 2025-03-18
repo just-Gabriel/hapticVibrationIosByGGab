@@ -37,6 +37,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		017B29932D89C3F5009B56E6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		3242A7F22C539F5900740138 /* TrainingTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingTestView.swift; sourceTree = "<group>"; };
 		3242A7F42C539F8A00740138 /* RealTestStartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealTestStartView.swift; sourceTree = "<group>"; };
 		3242A7F62C53A48800740138 /* TrainingWelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingWelcomeView.swift; sourceTree = "<group>"; };
@@ -138,6 +139,7 @@
 		329AEC782C1AECD000D96430 /* ProjetApi */ = {
 			isa = PBXGroup;
 			children = (
+				017B29932D89C3F5009B56E6 /* Info.plist */,
 				329AEC792C1AECD000D96430 /* ProjetApiApp.swift */,
 				328336D32C2B320500F77012 /* Network */,
 				329AEC7D2C1AECD100D96430 /* Assets.xcassets */,
@@ -415,6 +417,7 @@
 				DEVELOPMENT_TEAM = 36SW5PPNPB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ProjetApi/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -444,6 +447,7 @@
 				DEVELOPMENT_TEAM = 36SW5PPNPB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ProjetApi/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

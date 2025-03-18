@@ -25,6 +25,7 @@ struct TestView: View {
         "notificationSuccess": 24, "notificationWarning": 25, "notificationError": 26,
         "selection": 27, "sequenceImpactLightMedium": 28, "sequenceImpactHeavyRigid": 29,
         "sequenceNotificationSuccessError": 30, "sequenceSelectionImpactLight": 31,
+        
         "loopImpactLight": 32, "loopImpactMedium": 33, "loopImpactHeavy": 34
     ]
     
@@ -145,8 +146,8 @@ struct TestView: View {
         _currentUserId = State(initialValue: userId)
         _currentPhoneId = State(initialValue: phoneId)
     }
-
-    var body: some View {
+//---------------------------------------------------------------------
+    /*var body: some View {
         VStack {
             if showThankYouView {
                 ThankYouView()
@@ -236,7 +237,140 @@ struct TestView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
-    }
+    }*/
+    
+    //---------------------------------------------------------------
+
+    
+    var body: some View {
+            VStack {
+                if showThankYouView {
+                    ThankYouView()
+                        .transition(.opacity)
+                        .navigationBarHidden(true)
+                } else if showNextTestView {
+                    NextTestView()
+                        .transition(.opacity)
+                        .navigationBarHidden(true)
+
+                } else {
+                    VStack {
+                        if isLoadingData {
+                            ProgressView("Chargement des données...")
+                                .progressViewStyle(CircularProgressViewStyle())
+                                .onAppear {
+                                    loadData()
+                                }
+                        } else {
+                            Spacer(minLength: 10)
+
+                            Text("\(feedbackPlayCount)/3 fois")
+                                .font(.subheadline)
+                                .padding(.bottom, 10)
+
+                            // Bouton pour jouer la vibration
+                            Button(action: {
+                                if feedbackPlayCount < 3 {
+                                    if currentFeedbackType == nil {
+                                        selectCurrentFeedbackType()
+                                    }
+                                    if let feedbackType = currentFeedbackType {
+                                        feedbackTypes[feedbackType]?()
+                                        feedbackPlayCount += 1
+                                        isFirstButtonPressed = true
+                                    }
+                                }
+                            }) {
+                                Text("Jouer la vibration")
+                                    .padding()
+                                    .background(feedbackPlayCount < 3 ? accentColor : Color.gray)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(10)
+                            }
+                            .padding(.bottom, 30)
+                            .disabled(validateCount <= 0)
+
+
+                            Spacer()
+
+                            VStack {
+                                HStack {
+                                    Text("Désagréable")
+                                        .font(.caption)
+                                        .foregroundColor(.black)
+                                    Spacer()
+                                    Text(String(format: "%.1f", slider1Value))
+                                        .font(.caption)
+                                        .foregroundColor(.white)
+                                    Spacer()
+                                    Text("Agréable")
+                                        .font(.caption)
+                                        .foregroundColor(.black)
+                                }
+                                .padding(.horizontal)
+                                CustomSliderWithTicks(value: $slider1Value, range: -5.0...5.0, accentColor: accentColor, step: 0.1)
+                                    .padding()
+                                HStack {
+                                    Text("Faible")
+                                        .font(.caption)
+                                        .foregroundColor(.black)
+                                    Spacer()
+                                    Text(String(format: "%.1f", slider2Value))
+                                        .font(.caption)
+                                        .foregroundColor(.white)
+                                    Spacer()
+                                    Text("Intense")
+                                        .font(.caption)
+                                        .foregroundColor(.black)
+                                }
+                                .padding(.horizontal)
+
+                                CustomSliderWithTicks(value: $slider2Value, range: 0.0...10, accentColor: accentColor, step: 0.4)
+                                    .padding()
+                            }
+                            .padding(.bottom, 30)
+                            .disabled(validateCount <= 0)
+
+                            Spacer()
+
+                           // Bouton pour valider l'expérience
+                            Button(action: {
+                                if isFirstButtonPressed {
+                                    saveVibrationAndSubmitExperience(slider1Value: slider1Value, slider2Value: slider2Value)
+                                    moveToNextVibrationOrTableau()
+                                    validateCount -= 1
+                                    if validateCount > 0 {
+                                        showNextTestView = true
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                            showNextTestView = false
+                                        }
+                                    } else {
+                                        showThankYouView = true
+                                    }
+                                }
+                            }) {
+                                Text("Valider")
+                                    .padding(20)
+                                    .background(accentColor)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(10)
+                            }
+                            .padding(.bottom, 20)
+                            .disabled(!isFirstButtonPressed || validateCount <= 0 || isLoadingData)
+
+                            Text("Compteur: \(validateCount)")
+                                .font(.headline)
+                                .padding(.bottom, 20)
+
+                            Spacer()
+                        }
+                    }
+                    .navigationBarHidden(true)
+                }
+            }
+            .navigationBarBackButtonHidden(true)
+        }
+    
     
     private func loadData() {
             let group = DispatchGroup()

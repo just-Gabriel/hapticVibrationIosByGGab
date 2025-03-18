@@ -3,8 +3,8 @@ import Combine
 
 class APIService {
     static let shared = APIService()
-    let baseURL = "http://192.168.1.26:8000/api/"
-
+    let baseURL = "http://64.226.103.95:8000/api/"
+    
     private init() {}
 
     private var session: URLSession = {
